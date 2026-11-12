@@ -1,20 +1,19 @@
-<<<<<<< HEAD
 <div align="center">
 
 # 🏃 SportPulse AI
 
-### De l'activité sportive aux indicateurs RH : un POC traçable et rejouable
+### Plateforme de données pour le suivi des activités sportives et la simulation des avantages RH
 
 **FastAPI · Python · PostgreSQL · Kestra · dbt · AWS S3 · Slack · Metabase · Prometheus · Grafana**
 
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)
-![Status](https://img.shields.io/badge/Statut-POC%20de%20d%C3%A9monstration-0F766E)
+![Statut](https://img.shields.io/badge/Statut-POC%20fonctionnel-0F766E)
 
-**Projet 12 · Data Engineering · Soutenance Option B**
+**Projet Data Engineering · Applications web · Pipelines de données · Business Intelligence**
 
-[Présentation](#-présentation) · [Architecture](#-architecture) · [Installation](#-installation) · [Démo](#-démonstration-de-bout-en-bout) · [Tests](#-qualité-et-tests) · [Sécurité](#-sécurité-et-confidentialité)
+[Présentation](#-présentation) · [Architecture](#-architecture) · [Stack](#-stack-technique) · [Installation](#-installation) · [Flux](#-fonctionnement-de-bout-en-bout) · [Qualité](#-qualité-et-tests) · [Sécurité](#-sécurité-et-confidentialité)
 
 </div>
 
@@ -31,13 +30,13 @@ Le POC répond à trois questions :
 3. **Impact financier** — combien coûteraient une prime de mobilité et des journées bien-être selon différents scénarios ?
 
 > [!IMPORTANT]
-> **Ce dépôt est un POC, pas un système de paie.** Les activités historiques utilisées pour la démonstration peuvent être **synthétiques**. Les trajets déclarés, budgets et journées bien-être sont **prévisionnels**, soumis à une validation RH. Aucune prime ni journée n'est attribuée ou versée automatiquement.
+> **Ce dépôt est un POC, pas un système de paie.** Les données sportives historiques distribuées à titre d'exemple sont **synthétiques**. Les trajets déclarés, budgets et journées bien-être sont **prévisionnels**, soumis à une validation RH. Aucune prime ni journée n'est attribuée ou versée automatiquement.
 
 ### Les deux avantages étudiés
 
 | Dispositif | Règle de simulation | Limite métier |
 |---|---|---|
-| 🚲 **Prime de mobilité sportive** | **5 %** du salaire annuel brut ; test d'un scénario à **6 %** | Un trajet déclaré n'est pas une preuve de déplacement validée par les RH. |
+| 🚲 **Prime de mobilité sportive** | **5 %** du salaire annuel brut ; scénario alternatif à **6 %** | Un trajet déclaré n'est pas une preuve de déplacement validée par les RH. |
 | 🌿 **Journées bien-être** | Jusqu'à **5 jours/an** ; seuil expérimental de **15 activités/an** | Une activité déclarée n'ouvre pas automatiquement un droit. |
 
 ### Capacités du POC
@@ -59,7 +58,7 @@ flowchart LR
     EMP[Collaborateurs] --> PORTAL[Portail salarié]
     PORTAL --> API[FastAPI]
     API --> PG[(PostgreSQL)]
-    API --> DEMO[(SQLite démo / admin)]
+    API --> DEMO[(SQLite local / admin)]
 
     RH[Classeur RH et sport\nHORS GIT] --> KE[Kestra]
     KE --> BR[S3 Bronze\nSHA-256]
@@ -101,7 +100,7 @@ flowchart LR
 |---|---|---|
 | Application | **FastAPI, Python 3.12** | Portail salarié, administration, API, métriques |
 | Stockage métier | **PostgreSQL 16** | Sources consolidées, règles, scénarios, vues BI |
-| État local de démonstration | **SQLite** | Comptes de démonstration et historique admin local |
+| État local de démonstration | **SQLite** | Comptes du portail et historique administratif local |
 | Orchestration | **Kestra** | Étapes, paramètres, exécutions et relances |
 | Fichiers / stockage objet | **AWS S3** | Bronze, artefacts, empreintes SHA-256 |
 | Transformation | **Python, dbt** | Silver, Gold, tests et datamarts |
@@ -125,8 +124,8 @@ flowchart LR
 ### 1. Télécharger et configurer
 
 ```bash
-git clone https://github.com/VOTRE_COMPTE/VOTRE_DEPOT.git
-cd VOTRE_DEPOT
+git clone https://github.com/djibrilba38/OPC_SportPulse.git
+cd OPC_SportPulse
 cp .env.example .env
 cp .env.aws.example .env.aws
 ```
@@ -141,7 +140,7 @@ POSTGRES_PASSWORD=VOTRE_MOT_DE_PASSE_LONG
 DATABASE_URL=postgresql://sportpulse:VOTRE_MOT_DE_PASSE_LONG@postgres:5432/sportpulse
 KESTRA_DB_PASSWORD=VOTRE_MOT_DE_PASSE_KESTRA
 SPORTPULSE_HOST_PROJECT_DIR=/chemin/absolu/vers/le/depot
-SPORTPULSE_DOCKER_NETWORK=sportpulse-ai-step_default
+SPORTPULSE_DOCKER_NETWORK=sportpulse-ai-github_default
 SPORTPULSE_SLACK_MODE=dry_run
 SPORTPULSE_MOTIVATION_BACKEND=template
 ```
@@ -155,21 +154,23 @@ Sous macOS/Linux, la commande `pwd` donne la valeur à placer dans `SPORTPULSE_H
 ```bash
 docker compose up -d --build
 docker compose ps
-curl -fsS http://localhost:8000/health
+curl -fsS http://localhost:8001/health
 ```
 
 | Service | URL locale | Usage |
 |---|---|---|
-| SportPulse AI | <http://localhost:8000/employee> | Portail salarié |
-| Administration RH | <http://localhost:8000/admin> | Simulation des avantages |
-| Reporting applicatif | <http://localhost:8000/admin/reporting> | Indicateurs RH |
-| API / docs | <http://localhost:8000/docs> | Routes documentées |
-| Kestra | <http://localhost:8080> | Exécutions du workflow |
-| Metabase | <http://localhost:3000> | Reporting BI |
-| Grafana | <http://localhost:3001> | Monitoring |
-| Prometheus | <http://localhost:9090> | Métriques |
+| SportPulse AI | <http://localhost:8001/employee> | Portail salarié |
+| Administration RH | <http://localhost:8001/admin> | Simulation des avantages |
+| Reporting applicatif | <http://localhost:8001/admin/reporting> | Indicateurs RH |
+| API / docs | <http://localhost:8001/docs> | Routes documentées |
+| Kestra | <http://localhost:8081> | Exécutions du workflow |
+| Metabase | <http://localhost:3002> | Reporting BI |
+| Grafana | <http://localhost:3003> | Monitoring |
+| Prometheus | <http://localhost:9091> | Métriques |
 
-**PostgreSQL** est exposé au Mac sur `127.0.0.1:5433` et sur `postgres:5432` *entre conteneurs*. Deux conteneurs PostgreSQL distincts sont utilisés : l'un pour SportPulse, l'autre pour l'état de Kestra.
+**PostgreSQL** est exposé au Mac sur `127.0.0.1:5434` et sur `postgres:5432` *entre conteneurs*. Deux conteneurs PostgreSQL distincts sont utilisés : l'un pour SportPulse, l'autre pour l'état de Kestra.
+
+Le projet Docker Compose utilise le nom `sportpulse-ai-github` et des ports hôte dédiés ; les ports inter-conteneurs restent standards. Les volumes Docker contiennent les données persistantes et ne sont pas inclus dans Git.
 
 **Aucun compte administrateur n'est créé par défaut.** Pour en créer un localement :
 
@@ -177,7 +178,7 @@ curl -fsS http://localhost:8000/health
 docker compose exec app python -m sportpulse.admin_portal create-admin --email admin@example.org
 ```
 
-Pour créer une invitation **fictive** à usage unique :
+Pour créer une invitation à usage unique avec une identité fictive :
 
 ```bash
 docker compose exec app python -m sportpulse.employee_portal create-invite \
@@ -217,7 +218,7 @@ Ce script produit des données **entièrement synthétiques** ; il n'écrase auc
 - Les migrations SQL se trouvent dans `sql/` (`init_schema.sql`, tables `benefits`, tables `rh`, vues analytiques et `powerbi`). Leur ordre et leurs prérequis sont documentés dans les en-têtes des scripts ; appliquez les migrations adaptées à votre environnement **avant** d'exécuter le pipeline.
 - Le workflow est dans [`kestra/flow/sportpulse_pipeline_complet.yml`](kestra/flow/sportpulse_pipeline_complet.yml). Importez-le dans Kestra, après configuration du réseau Docker et d'AWS S3.
 - Les traitements Bronze/Silver/Gold nécessitent des buckets S3 accessibles et les autorisations correspondantes : voir [`docs/aws/setup-s3.md`](docs/aws/setup-s3.md).
-- Exécution de démonstration : `reference_year=2026`, `bonus_rate=0.05`, `rules_version=rules_v1`, puis `bonus_rate=0.06`, `rules_version=rules_v2`.
+- Paramètres de scénarios disponibles : `reference_year=2026`, `bonus_rate=0.05`, `rules_version=rules_v1`, ou `bonus_rate=0.06`, `rules_version=rules_v2`.
 
 Une commande SQL de contrôle peut s'exécuter ainsi :
 
@@ -250,36 +251,30 @@ La vue doit avoir été créée par les migrations et alimentée par l'import / 
 
 ---
 
-## 🎬 Démonstration de bout en bout
+## 🔁 Fonctionnement de bout en bout
 
-Deux scénarios servent à vérifier les compétences attendues lors de la soutenance.
+Le système associe un **flux batch versionné** pour les calculs RH et un **flux applicatif** pour les activités déclarées depuis le portail.
 
-### A — Rejouer un scénario financier
+### Calcul des avantages et historisation
 
-1. Depuis l'administration RH ou Kestra, constater la situation de référence au taux **5 %**.
-2. Relancer un calcul au taux **6 %**, avec une **nouvelle version des règles**.
-3. Consulter l'historique des scénarios ; comparer budgets calculés, dates et paramètres.
-4. Rafraîchir le reporting et vérifier la prise en compte du nouveau scénario.
+Le pipeline traite les sources RH et sportives selon la séquence **Bronze → Silver → Gold**, puis publie les tables et vues destinées aux analyses. Le taux de prime et la version des règles font partie des paramètres d'exécution, ce qui permet de conserver des scénarios financiers distincts.
 
-> Un taux saisi dans un formulaire n'est **pas** une preuve de recalcul : utiliser la fonction « Calculer et enregistrer » / lancer le workflow, puis vérifier son historique.
+| Paramètre | Scénario de référence | Scénario alternatif |
+|---|---|---|
+| Année | `2026` | `2026` |
+| `bonus_rate` | `0.05` | `0.06` |
+| `rules_version` | `rules_v1` | `rules_v2` |
+| Restitution | Budget simulé et indicateurs | Budget recalculé et comparaison |
 
-### B — Créer une activité et observer sa diffusion
+Les résultats sont destinés à l'analyse et ne déclenchent aucune opération de paie.
 
-1. Ouvrir <http://localhost:8000/employee> avec **un compte de démonstration**.
-2. Enregistrer une nouvelle activité fictive et noter son identifiant.
-3. Vérifier sa persistance dans PostgreSQL (ou dans la SQLite locale selon le parcours).
-4. Inspecter les événements de l'outbox et les logs du worker :
+### Enregistrement d'une activité
 
-   ```bash
-   docker compose logs --since=5m -f slack-worker
-   ```
+Une activité déclarée sur le **portail salarié** est validée par l'application FastAPI, puis enregistrée dans la couche de persistance appropriée. Pour les déclarations métier PostgreSQL, une entrée est ajoutée à l'**outbox** transactionnelle. Le **Slack Worker** prend en charge la notification de manière asynchrone et s'appuie sur une clé d'événement pour limiter les doublons.
 
-5. Vérifier la publication **uniquement si** `SPORTPULSE_SLACK_MODE=live` et que le bot Slack est autorisé ; sinon tester le `dry_run`.
-6. Rafraîchir Metabase ; vérifier l'incrément du nombre d'activités sur les cartes alimentées par les vues incluant `portail_declare`.
+La publication dans Slack dépend de la configuration : `SPORTPULSE_SLACK_MODE=dry_run` pour un traitement sans envoi, ou `live` avec un bot autorisé. La génération des encouragements peut utiliser Mistral si le fournisseur est disponible ; un message standard sert de repli.
 
-**Sécurité de la démo** : utiliser des noms et activités fictifs ; ne pas projeter de clé API, salaire ou donnée RH individuelle.
-
----
+Les activités intégrées à la vue `powerbi.v_activity_monthly` peuvent être exploitées par Metabase, aux côtés des activités historiques. Les indicateurs restent dépendants des sources effectivement chargées et des éventuels mécanismes de cache de l'outil BI.
 
 ## 📊 Reporting et indicateurs
 
@@ -290,7 +285,7 @@ Les principaux indicateurs sont : nombre d'activités, salariés actifs, distanc
 - **Metabase** : tableaux de bord à brancher sur la **bonne base**, en vérifiant le rafraîchissement / éventuel cache.
 - **Power BI** : dictionnaire, mesures DAX, requêtes et exports dans [`powerbi/`](powerbi/).
 
-Les valeurs des captures de démonstration ne sont **pas codées en dur** dans les requêtes du dépôt : elles dépendent des données et de l'historique chargés.
+Les valeurs des indicateurs ne sont **pas codées en dur** dans les requêtes du dépôt : elles dépendent des données et de l'historique chargés.
 
 ## 📈 Monitoring
 
@@ -300,7 +295,7 @@ Prometheus collecte les métriques HTTP exposées sur `/metrics` par FastAPI. Gr
 > Ce POC ne dispose **pas encore** d'exporters complets pour PostgreSQL, Kestra, Metabase et les états internes du worker. Les logs Docker et les traces Kestra permettent des contrôles complémentaires, mais ne remplacent pas une supervision exhaustive en production.
 
 ```bash
-curl -fsS http://localhost:8000/health
+curl -fsS http://localhost:8001/health
 docker compose logs --tail=100 app
 docker compose logs --tail=100 kestra
 docker compose logs --tail=100 slack-worker
@@ -323,16 +318,16 @@ Valider les modèles dbt, **après** préparation de la base de données :
 docker compose --profile tools run --rm dbt build --project-dir /usr/app --profiles-dir /usr/app
 ```
 
-Les tests de bout en bout (Kestra/S3/PostgreSQL/Slack) exigent des services, des identifiants et des données de démonstration ; ils ne sont pas couverts par une simple compilation Python.
+Les tests d’intégration (Kestra/S3/PostgreSQL/Slack) supposent des services accessibles, les identifiants appropriés et des données synthétiques ; ils complètent les tests Python locaux.
 
 ## 🔐 Sécurité et confidentialité
 
 - Données RH et salaires : **jamais dans Git**, jamais dans les messages Slack, accès restreints.
-- Données de démonstration : identifiées comme synthétiques ; aucune attribution automatique d'avantage.
+- Données d’exemple : identifiées comme synthétiques ; aucune attribution automatique d'avantage.
 - Configuration : secrets dans `.env` / `.env.aws` **ignorés par Git** ; seuls les modèles `*.example` sont versionnés.
 - Notifications : **`dry_run` par défaut** ; possibilité d'utiliser des templates sans requête IA externe.
 - Mistral : l'API est optionnelle ; si elle échoue (ex. HTTP 401), un message prédéfini est utilisé. **Le RAG lexical du portail est distinct** de la fonction de motivation Slack.
-- Réseau : services exposés en `127.0.0.1` sur le poste de démonstration.
+- Réseau : services exposés en `127.0.0.1` sur l'hôte local.
 - **Kestra a accès au socket Docker** dans ce POC : c'est un privilège élevé, à isoler et à revoir avant production.
 
 ✅ Checklist de publication : [`docs/SECURITE_GITHUB.md`](docs/SECURITE_GITHUB.md).
@@ -362,7 +357,7 @@ SportPulse_AI_GitHub/
 
 - Le traitement historique est **synthétique** et dépend de l'apport de deux fichiers RH/sport **hors Git** et d'un stockage S3 autorisé.
 - Les validations de trajets, de salaires et de droits restent du ressort des RH ; aucun calcul n'est un bulletin de paie.
-- Les comptes de démonstration SQLite ne doivent pas être utilisés comme mécanisme de production multi-instance.
+- Le stockage local SQLite n'est pas adapté à une exploitation multi-instance en production.
 - La supervision est ciblée sur FastAPI et ses métriques HTTP ; exporters additionnels nécessaires pour couvrir le reste du système.
 - Les secrets et les données locales ont été retirés de l'archive distribuée ; une instance fraîche n'affiche **pas automatiquement les KPI historiques** de la machine de développement.
 - Metabase exige une connexion métier séparée de sa base de métadonnées, ainsi que les migrations SQL et les sources effectivement chargées.
@@ -372,12 +367,8 @@ SportPulse_AI_GitHub/
 
 <div align="center">
 
-### 🎓 SportPulse AI · Projet 12 · POC Data Engineering
+### SportPulse AI · Data Engineering · POC RH & Sport
 
 *Collecter avec rigueur · Transformer avec traçabilité · Restituer avec prudence*
 
 </div>
-=======
-# OPC_SportPulse
-SportPulse AI est un POC de plateforme de données destiné à évaluer des avantages RH liés à l'activité physique et à encourager une pratique sportive régulière. Il combine une application web, une chaîne batch auditable, des notifications et des tableaux de bord.
->>>>>>> c1601b50a57a4222ad3a8bdd531550f07ce64e11
