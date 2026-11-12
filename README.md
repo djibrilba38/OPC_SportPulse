@@ -227,7 +227,6 @@ docker compose exec -T postgres sh -c \
   'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < sql/init_schema.sql
 ```
 
-**Ne rejouez pas aveuglément toutes les migrations sur une base RH existante** : vérifiez les dépendances et effectuez une sauvegarde au préalable.
 
 ### 5. Connecter Metabase à la bonne base
 
