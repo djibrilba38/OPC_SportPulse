@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sportpulse-ai-step"
+version = "0.1.0"
+description = "POC Data Engineering: avantages sportifs, pipelines Kestra/dbt, reporting RH et Slack"
+requires-python = ">=3.11"
+dependencies = [
+  "boto3>=1.35,<2",
+  "fastapi>=0.115,<1",
+  "uvicorn[standard]>=0.30,<1",
+  "psycopg[binary]>=3.2,<4",
+  "prometheus-fastapi-instrumentator>=8.1,<9",
+  "qrcode[pil]>=8,<9",
+  "faiss-cpu>=1.9,<2",
+  "numpy>=1.26,<3",
+  "email-validator>=2.2,<3",
+  "httpx>=0.27,<1",
+  "openpyxl>=3.1,<4",
+  "PyYAML>=6,<7",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<10"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+[tool.setuptools.package-data]
+sportpulse = [
+    "employee_portal_assets/*.html",
+    "employee_portal_assets/*.css",
+    "employee_portal_assets/*.js",
+    "scenario_assets/*.html",
+    "scenario_assets/*.css",
+    "scenario_assets/*.js", "admin_assets/*.html", "admin_assets/*.css", "admin_assets/*.js",
+    "reporting_assets/*.html",
+    "reporting_assets/*.css",
+    "reporting_assets/*.js",
+    "rh_assets/*.html",
+    "rh_assets/*.css",
+    "rh_assets/*.js",
+]

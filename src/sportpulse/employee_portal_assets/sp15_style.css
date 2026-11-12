@@ -1,0 +1,23 @@
+/* POC épuré : la carte redevient visible ; aucun QR, statut à vérifier ou liste de trajets. */
+#page-dashboard{display:flex;flex-direction:column;gap:18px}
+#page-dashboard>.kpi-grid{order:1}
+#page-dashboard>#sp12-map-panel{order:2!important;display:block!important;visibility:visible!important;min-height:445px!important}
+#page-dashboard>.bottom-grid{order:3}
+#page-dashboard>#sp15-history{order:4}
+#sp12-map-panel .sp12-map-layout{display:block!important}
+#sp12-map-panel #sp12-map{height:350px!important;min-height:350px!important;width:100%!important;display:block!important}
+#sp12-map-panel .sp12-map-tools{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+#sp12-map-panel .sp12-map-caption{margin-top:10px;color:#597589;font-size:13px}
+#page-dashboard>.bottom-grid{display:grid!important;grid-template-columns:1fr!important}
+#page-dashboard .dashboard-grid{display:none!important}
+#page-dashboard>.bottom-grid>.panel:has(#recent-commutes){display:none!important}
+.side-nav [data-page="commutes"],.side-nav [data-page="benefits"],.side-nav [data-page="activities"]{display:none!important}
+#page-commutes, #page-benefits{display:none!important}
+#sp12-proof-overview,#sp12-validation-panel,#sp13-validation-toggle,.sp13-show-validation,#sp12-trip-form,#sp12-trip-items{display:none!important}
+.sp15-history{background:white;border:1px solid #dce8ee;border-radius:16px;padding:16px 20px;margin-top:8px}
+.sp15-history>summary{cursor:pointer;list-style:none;font-weight:750;color:#164354}
+.sp15-history>summary::after{content:'⌄';float:right;color:#12a99d}
+.sp15-history[open]>summary::after{content:'⌃'}
+.sp15-history #page-activities{padding:20px 0 0!important;display:block!important}
+.sp15-history #page-activities .panel{box-shadow:none;border:0;padding:0}
+@media(max-width:680px){#sp12-map-panel #sp12-map{height:295px!important;min-height:295px!important}}

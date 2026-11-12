@@ -1,0 +1,67 @@
+version: 2
+
+models:
+  - name: dim_employee
+    description: "Dimension des employés."
+    columns:
+      - name: employee_id
+        data_tests:
+          - not_null
+          - unique
+
+      - name: department
+        data_tests:
+          - not_null
+
+  - name: dim_activity_type
+    description: "Dimension des types d'activité."
+    columns:
+      - name: activity_type
+        data_tests:
+          - not_null
+          - unique
+
+  - name: dim_date
+    description: "Dimension calendrier des activités."
+    columns:
+      - name: date_key
+        data_tests:
+          - not_null
+          - unique
+
+      - name: full_date
+        data_tests:
+          - not_null
+          - unique
+
+  - name: fact_activity
+    description: "Table de faits au grain d'une activité sportive."
+    columns:
+      - name: activity_id
+        data_tests:
+          - not_null
+          - unique
+
+      - name: employee_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_employee')
+                field: employee_id
+
+      - name: activity_type
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_activity_type')
+                field: activity_type
+
+      - name: date_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_key

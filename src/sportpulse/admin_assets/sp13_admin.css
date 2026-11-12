@@ -1,0 +1,17 @@
+/* Administration RH : cinq événements visibles par tableau, actions explicites et zone démo. */
+#dashboard>.page-head h1{letter-spacing:-.03em}
+#sp13-sample-help{font-size:12px;line-height:1.5;margin:8px 0 0}
+.sp13-samples{padding:16px 18px;margin:0 0 20px;border:1px solid #c9e6e2;background:#f2fcfa;border-radius:13px}
+.sp13-samples strong{font-size:14px}
+.sp13-sample-fields{display:grid;grid-template-columns:1fr 1fr auto;gap:9px;margin-top:11px}
+.sp13-sample-fields select{min-width:0;width:100%;padding:10px;border-radius:9px;border:1px solid #bfd2d6;background:#fff}
+.sp13-sample-fields button{white-space:nowrap}
+.sp13-history-action{padding:7px 10px!important;border:1px solid #e4cccb!important;background:#fff!important;border-radius:8px!important;color:#a54743!important;font-size:12px!important;cursor:pointer}
+.sp13-history-action:hover{background:#fff1ef!important}
+#dashboard #sp12-advanced{margin-top:24px}
+#dashboard #sp12-advanced>summary{font-weight:750;cursor:pointer;color:#184558;padding:6px 0}
+.sp13-confirm{border:1px solid #d9e7ed;border-radius:18px;padding:26px;max-width:min(420px,90vw);box-shadow:0 28px 80px #182a3760;color:#15334a}
+.sp13-confirm::backdrop{background:rgba(10,29,44,.55);backdrop-filter:blur(2px)}
+.sp13-confirm h3{margin:0 0 12px}.sp13-confirm p{margin:0 0 18px;line-height:1.55}
+.sp13-confirm-actions{display:flex;gap:9px;justify-content:flex-end}
+@media(max-width:720px){.sp13-sample-fields{grid-template-columns:1fr}.sp13-sample-fields button{justify-self:start}}

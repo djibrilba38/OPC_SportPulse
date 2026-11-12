@@ -1,0 +1,295 @@
+name: sportpulse-ai-step
+
+services:
+  app:
+    image: sportpulse-ai-step-app:local
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    env_file:
+      - .env.aws
+
+    environment:
+      OSRM_BASE_URL: ${OSRM_BASE_URL:-https://routing.openstreetmap.de}
+      APP_ENV: aws
+      AWS_REGION: ${AWS_REGION:-eu-west-3}
+      S3_ENDPOINT_URL: ""
+      SOURCE_DIR: /app/data/source
+      MANIFEST_DIR: /app/data/manifests
+      DATABASE_URL: ${DATABASE_URL:?Définissez DATABASE_URL dans .env}
+      OFFICE_LATITUDE: ${OFFICE_LATITUDE:-}
+      OFFICE_LONGITUDE: ${OFFICE_LONGITUDE:-}
+      OFFICE_GEOFENCE_RADIUS_M: ${OFFICE_GEOFENCE_RADIUS_M:-150}
+      OFFICE_ARRIVAL_QR_SECRET: ${OFFICE_ARRIVAL_QR_SECRET:-}
+      OFFICE_QR_ADMIN_KEY: ${OFFICE_QR_ADMIN_KEY:-}
+      SPORTPULSE_SLACK_MODE: ${SPORTPULSE_SLACK_MODE:-dry_run}
+      SLACK_BOT_TOKEN: ${SLACK_BOT_TOKEN:-}
+      SLACK_CHANNEL_DEFAULT: ${SLACK_CHANNEL_DEFAULT:-}
+      SPORTPULSE_SLACK_CHANNELS_JSON: ${SPORTPULSE_SLACK_CHANNELS_JSON:-}
+      SPORTPULSE_MOTIVATION_BACKEND: ${SPORTPULSE_MOTIVATION_BACKEND:-template}
+      SPORTPULSE_MOTIVATION_MODEL: ${SPORTPULSE_MOTIVATION_MODEL:-ministral-3b-latest}
+      SPORTPULSE_VALIDATION_SECRET: ${SPORTPULSE_VALIDATION_SECRET:?Secret requis}
+  
+
+      # Portail salarié (SQLite persistant sous ./data)
+      PORTAL_DB_PATH: /app/data/portal.sqlite
+      ADMIN_DB_PATH: /app/data/admin.sqlite
+      ADMIN_DEMO_MODE: ${ADMIN_DEMO_MODE:-false}
+      PORTAL_SOCIAL_YEAR_START_MONTH: ${PORTAL_SOCIAL_YEAR_START_MONTH:-1}
+      # false autorisé uniquement en local HTTP ; true derrière HTTPS en production
+      PORTAL_COOKIE_SECURE: ${PORTAL_COOKIE_SECURE:-false}
+
+      # Copilote RAG : lexical par défaut, FAISS + Mistral sur activation
+      SPORTPULSE_KNOWLEDGE_DIR: /app/knowledge
+      SPORTPULSE_RAG_BACKEND: ${SPORTPULSE_RAG_BACKEND:-lexical}
+      SPORTPULSE_AI_TOKEN: ${SPORTPULSE_AI_TOKEN:?Définissez SPORTPULSE_AI_TOKEN dans .env}
+      MISTRAL_API_KEY: ${MISTRAL_API_KEY:-}
+
+    ports:
+      - "127.0.0.1:8000:8000"
+
+    volumes:
+      - ./data:/app/data
+      - ./knowledge:/app/knowledge:ro
+
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-sportpulse}
+      POSTGRES_USER: ${POSTGRES_USER:-sportpulse}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Définissez POSTGRES_PASSWORD dans .env}
+
+    ports:
+      - "127.0.0.1:5433:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/postgres-init/10-metabase.sh:/docker-entrypoint-initdb.d/10-metabase.sh:ro
+
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+    restart: unless-stopped
+
+  kestra-postgres:
+    image: postgres:16-alpine
+
+    environment:
+      POSTGRES_DB: kestra
+      POSTGRES_USER: kestra
+      POSTGRES_PASSWORD: ${KESTRA_DB_PASSWORD:?Définissez KESTRA_DB_PASSWORD dans .env}
+
+    volumes:
+      - kestra_postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+    restart: unless-stopped
+
+  kestra:
+    image: kestra/kestra:latest
+
+    env_file:
+      - .env.aws
+      - .env
+
+    pull_policy: if_not_present
+    user: "root"
+    command: server standalone
+    stop_grace_period: 6m
+
+    environment:
+      ENV_AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:?AWS_ACCESS_KEY_ID manquant}
+      ENV_AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:?AWS_SECRET_ACCESS_KEY manquant}
+      ENV_AWS_REGION: ${AWS_REGION:-eu-west-3}
+
+      ENV_DATABASE_URL: ${DATABASE_URL:?DATABASE_URL manquant}
+      ENV_SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL:-}
+      # Variables PostgreSQL pour dbt exécuté par Kestra
+      ENV_POSTGRES_USER: ${POSTGRES_USER:-sportpulse}
+      ENV_POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Définissez POSTGRES_PASSWORD dans .env}
+      ENV_POSTGRES_DB: ${POSTGRES_DB:-sportpulse}
+      ENV_SPORTPULSE_HOST_PROJECT_DIR: ${SPORTPULSE_HOST_PROJECT_DIR:?Définissez le chemin absolu du projet}
+      ENV_SPORTPULSE_DOCKER_NETWORK: ${SPORTPULSE_DOCKER_NETWORK:-sportpulse-ai-step_default}
+      ENV_S3_BUCKET_RAW: ${S3_BUCKET_RAW:?Bucket Bronze requis}
+      ENV_S3_BUCKET_ARTIFACTS: ${S3_BUCKET_ARTIFACTS:?Bucket artefacts requis}
+
+      KESTRA_CONFIGURATION: |
+        datasources:
+          postgres:
+            url: jdbc:postgresql://kestra-postgres:5432/kestra
+            driver-class-name: org.postgresql.Driver
+            username: kestra
+            password: "${KESTRA_DB_PASSWORD}"
+
+        kestra:
+          local-files:
+            allowed-paths:
+              - /host-data
+
+          variables:
+            env-vars-prefix: "ENV_"
+
+          plugins:
+            configurations:
+              - type: io.kestra.plugin.scripts.runner.docker.Docker
+                values:
+                  volume-enabled: true
+
+          repository:
+            type: postgres
+
+          storage:
+            type: local
+            local:
+              base-path: /app/storage
+
+          queue:
+            type: postgres
+
+          tasks:
+            tmp-dir:
+              path: /tmp/kestra-wd/tmp
+
+          url: http://localhost:8080/
+
+    ports:
+      - "127.0.0.1:8080:8080"
+
+    volumes:
+      - kestra_data:/app/storage
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp/kestra-wd:/tmp/kestra-wd
+      - "${SPORTPULSE_HOST_PROJECT_DIR:?Définissez le chemin absolu du projet}/data:/host-data:ro"
+
+    depends_on:
+      kestra-postgres:
+        condition: service_healthy
+
+    restart: unless-stopped
+
+  dbt:
+    image: sportpulse-ai-step-dbt:local
+
+    build:
+      context: ./dbt
+      dockerfile: Dockerfile
+
+    profiles:
+      - tools
+
+    working_dir: /usr/app
+
+    volumes:
+      - ./dbt:/usr/app
+
+    environment:
+      DBT_PROFILES_DIR: /usr/app
+
+      DBT_HOST: postgres
+      DBT_PORT: "5432"
+      DBT_USER: ${POSTGRES_USER:-sportpulse}
+      DBT_PASSWORD: ${POSTGRES_PASSWORD:?Définissez POSTGRES_PASSWORD dans .env}
+      DBT_DATABASE: ${POSTGRES_DB:-sportpulse}
+      DBT_SCHEMA: dbt_marts
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  metabase:
+    image: metabase/metabase:v0.64.1
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_HOST: postgres
+      MB_DB_PORT: "5432"
+      MB_DB_DBNAME: metabase_app
+      MB_DB_USER: ${POSTGRES_USER}
+      MB_DB_PASS: ${POSTGRES_PASSWORD}
+      MB_ENCRYPTION_SECRET_KEY: ${MB_ENCRYPTION_SECRET_KEY}
+      JAVA_TIMEZONE: Europe/Paris
+
+
+  prometheus:
+    image: prom/prometheus:v3.15.1
+    restart: unless-stopped
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    ports:
+      - "127.0.0.1:9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    depends_on:
+      app:
+        condition: service_started
+
+  grafana:
+    image: grafana/grafana:13.2.4
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?Définissez GRAFANA_ADMIN_PASSWORD dans .env}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./monitoring/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+    depends_on:
+      prometheus:
+        condition: service_started
+
+
+  slack-worker:
+    image: sportpulse-ai-step-app:local
+    command: ["python", "-m", "sportpulse.activity_notifications", "worker", "--interval", "5"]
+    env_file:
+      - .env.aws
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?Définissez DATABASE_URL dans .env}
+      PORTAL_DB_PATH: /app/data/portal.sqlite
+      SPORTPULSE_SLACK_MODE: ${SPORTPULSE_SLACK_MODE:-dry_run}
+      SLACK_BOT_TOKEN: ${SLACK_BOT_TOKEN:-}
+      SLACK_CHANNEL_DEFAULT: ${SLACK_CHANNEL_DEFAULT:-}
+      SPORTPULSE_SLACK_CHANNELS_JSON: ${SPORTPULSE_SLACK_CHANNELS_JSON:-}
+      SPORTPULSE_MOTIVATION_MODEL: ${SPORTPULSE_MOTIVATION_MODEL:-ministral-3b-latest}
+      SPORTPULSE_MOTIVATION_BACKEND: ${SPORTPULSE_MOTIVATION_BACKEND:-template}
+      MISTRAL_API_KEY: ${MISTRAL_API_KEY:-}
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      app:
+        condition: service_started
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  kestra_postgres_data:
+  kestra_data:
+  prometheus_data:
+  grafana_data:
+  

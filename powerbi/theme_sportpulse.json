@@ -1,0 +1,10 @@
+{
+  "name": "SportPulse AI — sobre",
+  "dataColors": ["#147D73", "#234C78", "#7A6BC2", "#C98B3D", "#6D8EAC", "#B3616D"],
+  "background": "#FFFFFF",
+  "foreground": "#192B3A",
+  "tableAccent": "#147D73",
+  "good": "#147D73",
+  "neutral": "#C98B3D",
+  "bad": "#B3616D"
+}

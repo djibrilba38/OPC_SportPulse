@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#071b35" />
+  <meta name="description" content="Mon espace SportPulse : activités, trajets et avantages sportifs." />
+  <title>Mon espace | SportPulse AI</title>
+  <link rel="stylesheet" href="/employee/assets/style.css" />
+  <script src="/employee/assets/app.js" defer></script>
+  
+  <link rel="stylesheet" href="/employee/assets/sp12_unified.css">
+  <link rel="stylesheet" href="/employee/assets/sp13_style.css">
+  <link rel="stylesheet" href="/employee/assets/sp15_style.css">
+  <script defer src="/employee/assets/sp15_map.js"></script>
+  <script defer src="/employee/assets/sp15_ui.js"></script>
+  <link rel="stylesheet" href="/employee/assets/sp16_benefits.css">
+  <script defer src="/employee/assets/sp16_benefits.js"></script>
+</head>
+<body>
+  <div id="auth" class="auth-layout">
+    <section class="auth-art" aria-label="Bienvenue sur SportPulse AI">
+      <div class="brand"><span class="brand-mark">↗</span><span>SportPulse <strong>AI</strong></span></div>
+      <div class="auth-hero">
+        <span class="eyebrow light">SPORT · BIEN-ÊTRE · COMMUNAUTÉ</span>
+        <h1>Chaque effort<br>compte<span class="mint">.</span></h1>
+        <p>Retrouve tes activités, suis ta progression et découvre tes avantages sportifs, au même endroit.</p>
+        <div class="hero-orbit"><span class="hero-orbit-inner">🏃</span><span class="orbit-label orbit-one">+12,4 km</span><span class="orbit-label orbit-two">▲ 86 pts</span></div>
+      </div>
+      <p class="auth-art-footer">La motivation est contagieuse. Faisons bouger l'équipe.</p>
+    </section>
+    <main class="auth-panel">
+      <div class="auth-content">
+        <span class="mini-pill"><span class="status-dot"></span> Espace personnel sécurisé</span>
+        <h2 id="auth-title">Heureux de te revoir 👋</h2>
+        <p id="auth-desc">Connecte-toi pour consulter ton tableau de bord sportif.</p>
+        <div class="auth-tabs" role="tablist" aria-label="Connexion ou création de compte">
+          <button class="auth-tab selected" id="auth-login-tab" type="button" data-auth="login">Connexion</button>
+          <button class="auth-tab" id="auth-register-tab" type="button" data-auth="register">Créer un compte</button>
+        </div>
+        <form id="auth-form" class="form-stack">
+          <label for="auth-email">Adresse e-mail</label>
+          <input id="auth-email" name="email" type="email" placeholder="prenom.nom@entreprise.fr" autocomplete="email" required />
+          <label for="auth-password">Mot de passe <span class="field-help">12 caractères minimum à l'inscription</span></label>
+          <input id="auth-password" name="password" type="password" placeholder="••••••••••••" autocomplete="current-password" required />
+          <div id="invite-box" class="hidden">
+            <label for="auth-invite">Code d'invitation RH</label>
+            <input id="auth-invite" name="invite" type="text" autocomplete="off" placeholder="Code reçu de l'administrateur" />
+            <p class="help-note">Un compte ne peut être créé qu'avec une invitation personnelle, à usage unique.</p>
+          </div>
+          <div id="auth-error" class="form-error hidden" role="alert"></div>
+          <button id="auth-submit" class="btn btn-primary full" type="submit">Se connecter <span aria-hidden="true">→</span></button>
+        </form>
+        <p class="auth-note">🔒 Tes données restent personnelles. Les chiffres de la démo sont entièrement fictifs.</p>
+      </div>
+    </main>
+  </div>
+
+  <div id="portal" class="app-shell hidden">
+    <aside class="sidebar">
+      <div class="brand brand-sidebar"><span class="brand-mark">↗</span><span>SportPulse <strong>AI</strong></span></div>
+      <div class="space-label">MON ESPACE</div>
+      <nav class="side-nav" aria-label="Navigation principale">
+        <button class="nav-item active" type="button" data-page="dashboard"><span class="nav-icon">◫</span><span>Vue d'ensemble</span></button>
+        <button class="nav-item" type="button" data-page="activities"><span class="nav-icon">♧</span><span>Mes activités</span></button>
+        <button class="nav-item" type="button" data-page="commutes"><span class="nav-icon">⌖</span><span>Mes trajets</span></button>
+        <button class="nav-item" type="button" data-page="benefits"><span class="nav-icon">✧</span><span>Mes avantages</span></button>
+      </nav>
+      <div class="sidebar-spacer"></div>
+      <div class="sidebar-highlight"><div>✦ DÉFI DE LA SEMAINE</div><strong>Chaque séance te rapproche de ton objectif.</strong><p>Continue sur ta lancée, à ton rythme.</p></div>
+      <div class="side-profile">
+        <div class="avatar" id="sidebar-avatar">S</div>
+        <div class="profile-name"><strong id="sidebar-name">Salarié</strong><small id="sidebar-id">EMPLOYEE</small></div>
+        <button id="logout" class="logout" type="button" title="Déconnexion" aria-label="Se déconnecter">⎋</button>
+      </div>
+    </aside>
+
+    <div class="main-area">
+      <header class="topbar"><span class="breadcrumb">SportPulse <span> / </span> <b id="current-page-label">Vue d'ensemble</b></span><div class="top-actions"><span class="demo-chip hidden" id="demo-banner">● ENVIRONNEMENT DÉMO</span><span class="date-chip">Année sociale&nbsp;<select id="year-select" aria-label="Année sociale"></select></span></div></header>
+      <main id="main-content" class="content-area">
+        <section class="intro-row"><div><div class="eyebrow">TON ESPACE SPORT ET BIEN-ÊTRE</div><h1 id="welcome-title">Bonjour 👋</h1><p id="welcome-description">Ton tableau de bord personnel se charge…</p></div><button id="new-activity" class="btn btn-primary" type="button">＋ Enregistrer une activité</button></section>
+        <div class="notice" id="privacy-notice">Les données de ce portail sont personnelles et les droits sont soumis à validation RH.</div>
+
+        <section id="page-dashboard" class="page-panel">
+<!-- À placer juste avant .kpi-grid dans #page-dashboard. -->
+
+          <section id="sp16-benefits" hidden aria-label="Objectif et avantages RH">
+  <div class="sp16-head"><h3>Mes objectifs et avantages</h3><span class="sp16-source">POC · suivi personnel</span></div>
+  <p id="sp16-warning" class="sp16-alert" hidden role="alert"></p>
+  <div class="sp16-grid">
+    <div class="sp16-card">
+      <div class="sp16-label">Objectif du mois · <span id="sp16-month-name">—</span></div>
+      <div class="sp16-number" id="sp16-month-total">—</div>
+      <div class="sp16-progress"><div id="sp16-month-progress"></div></div>
+      <p id="sp16-month-note">Activités enregistrées ce mois-ci</p>
+    </div>
+    <div class="sp16-card"><div class="sp16-label">Progression annuelle · bien-être</div>
+      <div class="sp16-number" id="sp16-year-total">—</div>
+      <p id="sp16-days">—</p>
+    </div>
+    <div class="sp16-card"><div class="sp16-label">Prime sportive estimée (RH)</div>
+      <div class="sp16-number" id="sp16-bonus">—</div>
+      <p id="sp16-bonus-note">Données du référentiel RH uniquement pour un compte lié</p>
+    </div>
+  </div>
+  <p class="sp16-footnote" id="sp16-legal"></p>
+</section>
+
+<div class="kpi-grid">
+            <article class="metric-card"><span class="metric-icon mint-bg">↗</span><div class="metric-label">Activités de l'année</div><strong class="metric-value" id="kpi-activities">–</strong><span class="metric-sub" id="kpi-activities-sub">Objectif : 15</span></article>
+            <article class="metric-card"><span class="metric-icon blue-bg">↝</span><div class="metric-label">Distance parcourue</div><strong class="metric-value" id="kpi-distance">–</strong><span class="metric-sub">Toutes activités confondues</span></article>
+            <article class="metric-card"><span class="metric-icon purple-bg">✧</span><div class="metric-label">Prime estimée</div><strong class="metric-value" id="kpi-bonus">–</strong><span class="metric-sub">Sous réserve d'éligibilité RH</span></article>
+            <article class="metric-card"><span class="metric-icon amber-bg">☼</span><div class="metric-label">Jours bien-être</div><strong class="metric-value" id="kpi-days">–</strong><span class="metric-sub" id="kpi-days-sub">Potentiel, non attribué</span></article>
+          </div>
+          <div class="dashboard-grid">
+            <article class="panel activity-chart-panel"><div class="panel-head"><div><h3>Ton activité dans le temps</h3><p>Nombre de séances par mois</p></div><span class="tag">Année sociale</span></div><div id="activity-chart" class="bars-chart" role="img" aria-label="Activités par mois"></div><div id="chart-months" class="chart-axis"></div></article>
+            <article class="panel progress-panel"><div class="panel-head"><div><h3>Ton score sportif</h3><p>Indicateur ludique</p></div><span class="tag tag-green">Personnel</span></div><div class="ring-wrap"><div id="score-ring" class="score-ring"><div class="ring-center"><strong id="score-value">0</strong><span>/ 100</span></div></div></div><div class="goal-line"><div><strong id="goal-current">0/15 séances</strong><p>Vers les journées bien-être</p></div><span id="goal-percent">0%</span></div><div class="progress-track"><div id="goal-bar"></div></div><p class="fine-print">Ce score n'est pas utilisé pour décider des droits ou des primes.</p></article>
+          </div>
+          <div class="bottom-grid"><article class="panel"><div class="panel-head"><div><h3>Dernières activités</h3><p>Ton historique personnel</p></div><button type="button" class="text-btn" data-goto="activities">Tout voir →</button></div><div id="recent-activities" class="timeline"></div></article><article class="panel"><div class="panel-head"><div><h3>Mes derniers trajets</h3><p>Mode et état de validation</p></div><button type="button" class="text-btn" data-goto="commutes">Voir les trajets →</button></div><div id="recent-commutes" class="commutes-list"></div></article></div>
+<section id="sp12-map-panel" class="panel" aria-label="Carte OpenStreetMap indicative">
+  <div class="panel-head"><div><h3>Explorer un itinéraire sportif</h3><p>Carte indicative pour découvrir une distance à pied, en course ou à vélo. Sans QR ni enregistrement de trajet.</p></div><span class="tag">OpenStreetMap</span></div>
+  <div class="sp12-map-tools"><label for="sp12-map-mode">Mode</label>
+    <select id="sp12-map-mode"><option value="bicycle">Vélo</option><option value="walking">Marche</option><option value="running">Course</option><option value="scooter">Trottinette</option></select>
+    <button class="btn btn-secondary" type="button" id="sp12-map-reset">Réinitialiser</button>
+  </div>
+  <div class="sp12-map-layout"><div id="sp12-map" role="application" aria-label="Carte OpenStreetMap interactive"></div></div>
+  <p class="sp12-map-caption" id="sp12-map-caption">Clique sur deux points pour estimer un itinéraire. Les traces GPS personnelles ne sont pas conservées.</p>
+</section>
+
+        </section>
+
+        <section id="page-activities" class="page-panel hidden"><div class="section-header"><div><h2>Mes activités</h2><p>Historique des séances et évolution de tes performances.</p></div><span id="activities-count" class="tag"></span></div><article class="panel"><div id="all-activities" class="timeline long"></div></article></section>
+
+        <section id="page-commutes" class="page-panel hidden"><div class="section-header"><div><h2>Mes trajets sportifs</h2><p>Seuls les résumés de trajets sont conservés ; aucun parcours GPS détaillé n'est archivé.</p></div><a href="/geo/commute" target="_blank" rel="noopener" class="btn btn-secondary">Suivre un trajet ↗</a></div><article class="panel"><div id="all-commutes" class="commutes-list long"></div></article><div class="map-explainer"><div class="map-decoration">⌖</div><div><strong>Besoin d'une carte ?</strong><p>La page cartographique existante permet de calculer un itinéraire. Les trajets historiques ne sont pas reconstruits à partir de points GPS non conservés.</p></div><a href="/map" target="_blank" rel="noopener" class="text-btn">Ouvrir la carte →</a></div></section>
+
+        <section id="page-benefits" class="page-panel hidden"><div class="section-header"><div><h2>Mes avantages</h2><p>Une vue personnelle, informative et transparente de tes avantages sportifs.</p></div></div><div class="benefits-grid"><article class="panel benefit-panel"><span class="benefit-symbol">✦</span><h3>Prime de déplacement sportif</h3><p>Taux applicable et estimation lorsqu'ils sont disponibles et validés par le moteur RH.</p><div class="benefit-large" id="benefit-bonus">–</div><div class="benefit-state" id="benefit-bonus-state">Calcul en cours…</div><div id="demo-simulator" class="simulator hidden"><label for="bonus-slider">Simulation personnelle du taux : <strong id="slider-value">5%</strong></label><input type="range" id="bonus-slider" min="1" max="10" step="0.5" value="5" /><p class="fine-print">Simulation sur un salaire fictif de 42 000 €. Aucun paramètre RH n'est modifié.</p></div></article><article class="panel benefit-panel"><span class="benefit-symbol">☼</span><h3>Journées bien-être</h3><p>Progression indicative vers le seuil et décisions RH lorsqu'elles sont disponibles.</p><div class="benefit-large" id="benefit-days">–</div><div class="benefit-state" id="benefit-days-state">Calcul en cours…</div><div class="meter"><span id="benefit-meter"></span></div><p class="fine-print">Les activités enregistrées ne constituent pas à elles seules une preuve d'éligibilité.</p></article></div></section>
+      </main>
+    </div>
+  </div>
+
+  <dialog id="activity-dialog" class="dialog"><form method="dialog" id="activity-form"><div class="dialog-head"><div><span class="eyebrow" id="activity-form-mode">NOUVELLE SÉANCE</span><h2>Ajouter une activité</h2></div><button class="close-button" type="button" id="close-dialog" aria-label="Fermer">×</button></div><p class="dialog-copy">Enregistre ta sortie sportive. Une validation RH reste nécessaire pour les avantages officiels.</p><div class="dialog-grid"><div><label for="activity-type">Sport</label><select id="activity-type" required><option value="running">🏃 Course à pied</option><option value="cycling">🚴 Vélo</option><option value="walking">🚶 Marche</option><option value="hiking">🥾 Randonnée</option><option value="swimming">🏊 Natation</option><option value="tennis">🎾 Tennis</option><option value="football">⚽ Football</option><option value="yoga">🧘 Yoga</option><option value="other">✨ Autre</option></select></div><div><label for="activity-date">Date et heure</label><input type="datetime-local" id="activity-date" required /></div><div><label for="activity-duration">Durée (minutes)</label><input type="number" id="activity-duration" min="1" max="1440" value="45" required /></div><div><label for="activity-distance">Distance (km)</label><input type="number" id="activity-distance" min="0" max="500" step="0.01" placeholder="5.4" /></div></div><label for="activity-comment">Commentaire personnel</label><textarea id="activity-comment" rows="3" maxlength="350" placeholder="Belle sortie, super sensations…"></textarea><label class="slack-consent"><input type="checkbox" id="activity-share-slack" /> Publier automatiquement cette séance dans le canal Slack sportif (nom, sport et performance uniquement). Le partage est facultatif.</label><p id="activity-error" class="form-error hidden" role="alert"></p><div class="dialog-actions"><button class="btn btn-secondary" id="cancel-activity" type="button">Annuler</button><button class="btn btn-primary" id="save-activity" type="submit">Enregistrer la séance →</button></div></form></dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- SportPulse AI : confirmation de suppression, centrée et accessible. -->
+  <dialog id="delete-activity-dialog" class="sp-delete-dialog"
+          aria-labelledby="sp-delete-title" aria-describedby="sp-delete-message">
+    <form method="dialog" class="sp-delete-modal">
+      <div class="sp-delete-icon" aria-hidden="true">
+        <svg width="27" height="27" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 6h18M8 6V4h8v2M5 6l1 15h12l1-15M10 10v7M14 10v7"/>
+        </svg>
+      </div>
+      <h2 id="sp-delete-title">Supprimer cette activité ?</h2>
+      <p id="sp-delete-message" class="sp-delete-description">
+        Es-tu sûr de vouloir supprimer cette activité de ton bilan sportif ?
+      </p>
+      <p class="sp-delete-note">
+        Si l'activité a été publiée sur Slack, la suppression du message sera également demandée.
+      </p>
+      <div class="sp-delete-actions">
+        <button type="submit" class="sp-delete-btn sp-delete-cancel" value="cancel" autofocus>Annuler</button>
+        <button type="submit" class="sp-delete-btn sp-delete-danger" value="delete">Supprimer l’activité</button>
+      </div>
+    </form>
+  </dialog>
+</body>
+</html>

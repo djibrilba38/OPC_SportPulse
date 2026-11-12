@@ -1,0 +1,40 @@
+
+name: sportpulse_analytics
+version: "1.0.0"
+config-version: 2
+
+profile: sportpulse_analytics
+
+model-paths:
+  - models
+
+analysis-paths:
+  - analyses
+
+test-paths:
+  - tests
+
+seed-paths:
+  - seeds
+
+macro-paths:
+  - macros
+
+snapshot-paths:
+  - snapshots
+
+clean-targets:
+  - target
+  - dbt_packages
+
+# Supprimer les anciennes FK avant de reconstruire les tables.
+on-run-start:
+  - "{{ drop_star_foreign_keys() }}"
+
+# Ajouter les contraintes physiques après un build réussi.
+on-run-end:
+  - "{{ create_star_constraints() }}"
+
+models:
+  sportpulse_analytics:
+    +materialized: table

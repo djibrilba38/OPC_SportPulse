@@ -1,0 +1,138 @@
+-- SportPulse AI — mesures DAX, à créer une par une dans Power BI.
+-- Noms de tables si les CSV fournis sont importés :
+-- resume_annuel, activites_mensuelles, effectifs_departements,
+-- scenarios_budget, bienetre_annuel, executions_pipeline.
+-- Date : month_start doit être de type Date ; les EUR en nombre décimal fixe.
+-- IMPORTANT : crée une table DimAnnee et relie social_year en 1 -> * aux tables.
+
+-- Table calculée DimAnnee (Modélisation > Nouvelle table) :
+DimAnnee =
+DISTINCT ( SELECTCOLUMNS ( 'resume_annuel', "social_year", 'resume_annuel'[social_year] ) )
+
+-- Mesures à placer, par exemple, dans la table resume_annuel.
+Effectif RH =
+IF ( HASONEVALUE ( 'DimAnnee'[social_year] ), MAX ( 'resume_annuel'[employee_count] ), BLANK () )
+
+Candidats à la prime =
+IF ( HASONEVALUE ( 'DimAnnee'[social_year] ), MAX ( 'resume_annuel'[sporting_commute_candidates] ), BLANK () )
+
+Activités Gold =
+CALCULATE (
+    SUM ( 'activites_mensuelles'[activity_count] ),
+    'activites_mensuelles'[data_origin] = "gold_synthetique"
+)
+
+Activités portail =
+CALCULATE (
+    SUM ( 'activites_mensuelles'[activity_count] ),
+    'activites_mensuelles'[data_origin] = "portail_declare"
+)
+
+Enregistrements sportifs (2 sources) =
+[Activités Gold] + [Activités portail]
+
+Distance totale km =
+SUM ( 'activites_mensuelles'[distance_km] )
+
+Durée totale heures =
+DIVIDE ( SUM ( 'activites_mensuelles'[duration_min] ), 60 )
+
+Budget candidats dernier scénario EUR =
+IF (
+    HASONEVALUE ( 'DimAnnee'[social_year] ),
+    MAX ( 'resume_annuel'[latest_candidate_bonus_budget_eur] ),
+    BLANK ()
+)
+
+Coût jours bien-être simulés EUR =
+IF (
+    HASONEVALUE ( 'DimAnnee'[social_year] ),
+    MAX ( 'resume_annuel'[latest_capacity_cost_eur] ),
+    BLANK ()
+)
+
+Coût illustratif total EUR =
+IF (
+    HASONEVALUE ( 'DimAnnee'[social_year] ),
+    MAX ( 'resume_annuel'[latest_total_illustrative_eur] ),
+    BLANK ()
+)
+
+Budget trajets RH validés EUR =
+IF (
+    HASONEVALUE ( 'DimAnnee'[social_year] ),
+    MAX ( 'resume_annuel'[latest_validated_bonus_budget_eur] ),
+    BLANK ()
+)
+
+Taux de prime dernier scénario =
+IF (
+    HASONEVALUE ( 'DimAnnee'[social_year] ),
+    MAX ( 'resume_annuel'[latest_bonus_rate] ),
+    BLANK ()
+)
+
+Salariés potentiels bien-être synthétiques =
+IF (
+    HASONEVALUE ( 'DimAnnee'[social_year] ),
+    MAX ( 'resume_annuel'[latest_synthetic_wellbeing_eligible] ),
+    BLANK ()
+)
+
+Jours bien-être simulés =
+IF (
+    HASONEVALUE ( 'DimAnnee'[social_year] ),
+    MAX ( 'resume_annuel'[latest_simulated_wellbeing_days] ),
+    BLANK ()
+)
+
+Jours attribués (enregistrés RH) =
+IF (
+    HASONEVALUE ( 'DimAnnee'[social_year] ),
+    MAX ( 'resume_annuel'[officially_entitled_days] ),
+    BLANK ()
+)
+
+Budget prime 5 % EUR =
+IF (
+    HASONEVALUE ( 'DimAnnee'[social_year] ),
+    MAXX (
+        TOPN (
+            1,
+            FILTER ( 'scenarios_budget', 'scenarios_budget'[bonus_rate] = 0.05 && 'scenarios_budget'[is_active_import] = TRUE () ),
+            'scenarios_budget'[calculated_at], DESC,
+            'scenarios_budget'[scenario_id], DESC
+        ),
+        'scenarios_budget'[candidate_bonus_budget_eur]
+    ),
+    BLANK ()
+)
+
+Budget prime 6 % EUR =
+IF (
+    HASONEVALUE ( 'DimAnnee'[social_year] ),
+    MAXX (
+        TOPN (
+            1,
+            FILTER ( 'scenarios_budget', 'scenarios_budget'[bonus_rate] = 0.06 && 'scenarios_budget'[is_active_import] = TRUE () ),
+            'scenarios_budget'[calculated_at], DESC,
+            'scenarios_budget'[scenario_id], DESC
+        ),
+        'scenarios_budget'[candidate_bonus_budget_eur]
+    ),
+    BLANK ()
+)
+
+Écart budget 6 % - 5 % EUR =
+IF (
+    NOT ISBLANK ( [Budget prime 6 % EUR] )
+        && NOT ISBLANK ( [Budget prime 5 % EUR] ),
+    [Budget prime 6 % EUR] - [Budget prime 5 % EUR],
+    BLANK ()
+)
+
+Taux de participation candidats =
+DIVIDE ( [Candidats à la prime], [Effectif RH] )
+
+-- ⚠️ Aucun DAX ne doit transformer 'prime estimée' en 'prime versée'.
+-- ⚠️ Pas de SUM(candidate_bonus_budget_eur) sur tous les scénarios : double comptage.

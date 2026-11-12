@@ -1,0 +1,7 @@
+#sp15-portal-accounts .sp15-account-row{display:grid;grid-template-columns:minmax(130px,1.2fr) minmax(130px,1fr) 1fr;align-items:center;gap:12px;border-bottom:1px solid #e7edf2;padding:12px 0;font-size:13px}
+#sp15-portal-accounts .sp15-account-row small{color:#6b8092}
+#sp15-portal-accounts .sp15-list{max-height:265px;overflow:auto;margin:12px 0}
+#sp15-portal-accounts .sp15-search-controls{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+#sp15-portal-accounts .sp15-search-controls label{flex:1;min-width:210px}
+#sp15-portal-accounts .sp15-search-controls button{flex-shrink:0}
+@media(max-width:680px){#sp15-portal-accounts .sp15-account-row{grid-template-columns:1fr;gap:3px}}

@@ -1,0 +1,71 @@
+# Python / build / caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+build/
+dist/
+
+# Operating system / editors
+.DS_Store
+__MACOSX/
+._*
+.idea/
+.vscode/
+*.swp
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+!.env.aws.example
+*.pem
+*.key
+*.p12
+*credentials*.json
+
+# Runtime state and employee/HR data
+data/*
+!data/source/
+!data/manifests/
+!data/private_rh/
+data/source/*
+!data/source/.gitkeep
+!data/source/activities_demo.csv
+!data/source/employees_demo.csv
+data/manifests/*
+!data/manifests/.gitkeep
+data/private_rh/*
+!data/private_rh/.gitkeep
+knowledge/*
+!knowledge/.gitkeep
+*.sqlite
+*.sqlite3
+*.db
+*.db-wal
+*.db-shm
+*.xlsx
+*.xls
+!docs/**/*.xlsx
+
+# Pipeline/dbt artifacts (never commit snapshots, logs or manifests)
+dbt/target/
+dbt/logs/
+dbt/dbt_packages/
+dbt/.user.yml
+logs/
+backups/
+.sportpulse_step11_backup/
+*.log
+*.bak
+*.bak.*
+
+# Test and private exports
+*.zip
+*.tar.gz

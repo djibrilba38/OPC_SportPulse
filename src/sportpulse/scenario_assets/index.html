@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light"><title>SportPulse AI · Simulation RH & replay</title>
+<link rel="stylesheet" href="/admin/replay/assets/style.css"><script src="/admin/replay/assets/app.js" defer></script></head>
+<body><header class="top"><a href="/admin">← Administration RH</a><strong>SportPulse <span>AI</span></strong><span>Scénarios & replay</span></header>
+<main class="shell">
+  <section class="hero"><div><p class="eyebrow">ADMINISTRATION RH · NON CONTRACTUEL</p><h1>Simulateur de prime et replay historique</h1><p>Chaque simulation conserve la version des règles et une empreinte de l'instantané source. Aucun paiement, aucune modification de la politique RH officielle.</p></div><div class="chip">Version initiale : 5 %</div></section>
+  <div id="banner" role="status" aria-live="polite" class="notice">Connexion administrateur requise. <a href="/admin">Ouvrir l'espace admin</a>.</div>
+  <div id="workspace" hidden>
+    <section class="two">
+      <article class="panel"><h2>1 · Versions des règles</h2><p class="muted">Une nouvelle version ne modifie jamais les précédentes.</p>
+        <label for="rate">Nouveau taux de prime (%)</label><input id="rate" type="number" min="0" max="20" step="0.25" value="5.00">
+        <label for="note">Motif du changement</label><input id="note" maxlength="250" value="Simulation de taux pour la soutenance" placeholder="Ex. scénario 6 %">
+        <button id="save-rule">Enregistrer une version immuable</button><p class="muted">Règle officielle de paie inchangée.</p>
+      </article>
+      <article class="panel"><h2>2 · Source et calcul</h2><p class="muted">Le run mémorise l'agrégat source pour le rejouer à l'identique.</p>
+        <label for="source">Source</label><select id="source"><option value="demo">Démo : profils fictifs</option><option value="postgres">PostgreSQL : agrégats RH</option></select>
+        <label for="year">Année</label><input id="year" type="number" value="2026" min="2020" max="2100">
+        <label for="rule">Version à appliquer</label><select id="rule"></select>
+        <button id="run">Calculer et sauvegarder</button>
+      </article>
+    </section>
+    <section class="panel"><div class="section-head"><div><h2>3 · Résultat du dernier calcul</h2><p class="muted" id="run-label">Aucun calcul affiché</p></div><span class="tag">SIMULATION</span></div>
+      <div class="kpis"><div><small>Budget de référence</small><strong id="old-budget">—</strong></div><div><small>Budget simulé</small><strong id="new-budget">—</strong></div><div><small>Écart</small><strong id="budget-delta">—</strong></div><div><small>Candidats</small><strong id="eligible">—</strong></div></div>
+      <p class="muted" id="result-note">Aucun droit RH n'est créé par ces calculs.</p></section>
+    <section class="panel"><div class="section-head"><div><h2>4 · Historique des exécutions</h2><p class="muted">Rejouer un ancien instantané avec une autre version de règles.</p></div><button class="secondary" id="refresh">Actualiser</button></div>
+      <div class="scroll"><table><thead><tr><th>Run</th><th>Année</th><th>Source</th><th>Règle</th><th>Budget simulé</th><th>Écart</th><th>Rejouer</th></tr></thead><tbody id="runs"></tbody></table></div></section>
+    <p class="foot">Sécurité : session administrateur, jeton CSRF, agrégats uniquement · Pas de salaires individuels exportés.</p>
+  </div>
+</main></body></html>

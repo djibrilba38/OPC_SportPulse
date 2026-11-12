@@ -1,0 +1,22 @@
+/* Ajout compact sous le tableau de bord — pas de nouvelles pages. */
+#sp16-benefits{order:2;margin:0;border:1px solid #dce8ee;background:#fff;border-radius:18px;padding:20px 22px}
+#sp16-benefits[hidden]{display:none!important}
+#sp16-benefits .sp16-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
+#sp16-benefits .sp16-head h3{font-size:17px;font-weight:750;margin:0;color:#13314b}
+#sp16-benefits .sp16-source{font-size:11px;color:#0b8f85;background:#e7f7f4;padding:6px 10px;border-radius:100px}
+#sp16-benefits .sp16-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+#sp16-benefits .sp16-card{background:#f4f8fb;border-radius:14px;padding:16px;min-width:0}
+#sp16-benefits .sp16-label{font-size:12px;color:#5c7389;font-weight:700;margin-bottom:8px}
+#sp16-benefits .sp16-number{font-size:22px;color:#112d46;font-weight:800;overflow-wrap:anywhere}
+#sp16-benefits .sp16-card p{font-size:12px;color:#637b90;margin:7px 0 0;line-height:1.5}
+#sp16-benefits .sp16-progress{height:7px;background:#d9e8ed;border-radius:10px;overflow:hidden;margin-top:12px}
+#sp16-benefits #sp16-month-progress{height:100%;width:0;background:#00a99b;border-radius:10px;transition:width .3s ease}
+#sp16-benefits .sp16-footnote{margin:15px 0 0;color:#73869a;font-size:11px;line-height:1.5}
+#sp16-benefits .sp16-alert{color:#a43b32;margin:6px 0 12px;font-size:13px}
+@media(max-width:820px){#sp16-benefits .sp16-grid{grid-template-columns:1fr}#sp16-benefits{padding:16px}}
+/* Les informations prime/jours existent désormais dans le panneau personnalisé :
+   ne pas conserver deux versions concurrentes des mêmes indicateurs. */
+#page-dashboard>.kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+#page-dashboard>.kpi-grid>.metric-card:nth-child(3),
+#page-dashboard>.kpi-grid>.metric-card:nth-child(4){display:none!important}
+@media(max-width:680px){#page-dashboard>.kpi-grid{grid-template-columns:1fr!important}}

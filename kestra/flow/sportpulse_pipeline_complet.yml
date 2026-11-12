@@ -1,0 +1,284 @@
+id: sportpulse_pipeline_complet
+namespace: sportpulse
+# Le flow est versionné dans Git. Déploiement par import Kestra après revue.
+description: >
+  POC SportPulse AI — classeurs RH réels du projet + activités 100 % simulées.
+  Bronze S3 > Silver qualité > staging PostgreSQL > Gold sportif > RH/Finance
+  > dbt > contrôle final. Aucune notification Slack historique, aucun paiement.
+
+concurrency:
+  limit: 1
+  behavior: QUEUE
+
+inputs:
+  - id: reference_year
+    type: INT
+    defaults: 2026
+  - id: bonus_rate
+    type: STRING
+    defaults: "0.05"
+  - id: rules_version
+    type: STRING
+    defaults: "rules_v1"
+  - id: simulation_seed
+    type: INT
+    defaults: 42
+  - id: min_activities_per_year
+    type: INT
+    defaults: 15
+  - id: wellbeing_days
+    type: INT
+    defaults: 5
+  - id: wellbeing_daily_cost_eur
+    type: STRING
+    defaults: "220.00"
+  - id: maximum_rejected_rows
+    type: INT
+    defaults: 0
+
+# Exécution manuelle pour éviter la lecture automatique de fichiers RH sensibles.
+# Un trigger Schedule peut être ajouté après validation DPO/RH et surveillance.
+
+tasks:
+  - id: prepare_sources
+    type: io.kestra.plugin.docker.cli.Run
+    description: "RH XLSX > CSV Silver canonique + activités synthétiques déterministes; conserve les originaux en Bronze."
+    containerImage: sportpulse-ai-step-app:local
+    pullPolicy: NEVER
+    entryPoint: ["/bin/sh", "-lc"]
+    commands:
+      - >-
+        python -m sportpulse.kestra_bridge prepare
+        --rh /app/data/private_rh/Donnees_RH.xlsx
+        --sport /app/data/private_rh/Donnees_Sportive.xlsx
+        --run-id "{{ execution.id }}"
+        --year "{{ inputs.reference_year }}"
+        --seed "{{ inputs.simulation_seed }}"
+    env:
+      DATABASE_URL: "{{ envs.database_url }}"
+    volumes:
+      - "{{ envs.sportpulse_host_project_dir }}/data:/app/data"
+    networkMode: "{{ envs.sportpulse_docker_network }}"
+    timeout: PT10M
+
+  - id: bronze_ingestion_s3
+    type: io.kestra.plugin.docker.cli.Run
+    description: "Empreintes SHA-256 et dépôt S3 des fichiers RH originaux + CSV dérivés."
+    containerImage: sportpulse-ai-step-app:local
+    pullPolicy: NEVER
+    entryPoint: ["/bin/sh", "-lc"]
+    commands:
+      - >-
+        python -m sportpulse.kestra_bridge bronze
+        --input-dir "{{ outputs.prepare_sources.vars.source_dir }}"
+    env:
+      APP_ENV: aws
+      AWS_REGION: "{{ envs.aws_region }}"
+      AWS_ACCESS_KEY_ID: "{{ envs.aws_access_key_id }}"
+      AWS_SECRET_ACCESS_KEY: "{{ envs.aws_secret_access_key }}"
+      S3_BUCKET_RAW: "{{ envs.s3_bucket_raw }}"
+      S3_BUCKET_ARTIFACTS: "{{ envs.s3_bucket_artifacts }}"
+      MANIFEST_DIR: /app/data/manifests
+    volumes:
+      - "{{ envs.sportpulse_host_project_dir }}/data:/app/data"
+    networkMode: "{{ envs.sportpulse_docker_network }}"
+    timeout: PT15M
+
+  - id: silver_transform
+    type: io.kestra.plugin.docker.cli.Run
+    description: "Transformation Bronze/S3 en Silver contrôlée; rejet de lignes non conformes."
+    containerImage: sportpulse-ai-step-app:local
+    pullPolicy: NEVER
+    entryPoint: ["/bin/sh", "-lc"]
+    commands:
+      - >-
+        python -m sportpulse.kestra_bridge silver
+        --manifest-uri "{{ outputs.bronze_ingestion_s3.vars.manifest_uri }}"
+    env:
+      APP_ENV: aws
+      AWS_REGION: "{{ envs.aws_region }}"
+      AWS_ACCESS_KEY_ID: "{{ envs.aws_access_key_id }}"
+      AWS_SECRET_ACCESS_KEY: "{{ envs.aws_secret_access_key }}"
+      S3_BUCKET_RAW: "{{ envs.s3_bucket_raw }}"
+      S3_BUCKET_ARTIFACTS: "{{ envs.s3_bucket_artifacts }}"
+      MANIFEST_DIR: /app/data/manifests
+    volumes:
+      - "{{ envs.sportpulse_host_project_dir }}/data:/app/data"
+    networkMode: "{{ envs.sportpulse_docker_network }}"
+    timeout: PT15M
+
+  - id: silver_quality_gate
+    type: io.kestra.plugin.docker.cli.Run
+    description: "Arrêt si les rejets Silver dépassent le plafond autorisé."
+    containerImage: sportpulse-ai-step-app:local
+    pullPolicy: NEVER
+    entryPoint: ["/bin/sh", "-lc"]
+    commands:
+      - >-
+        python -m sportpulse.kestra_bridge quality
+        --manifest-uri "{{ outputs.silver_transform.vars.manifest_uri }}"
+        --max-rejected "{{ inputs.maximum_rejected_rows }}"
+    env:
+      AWS_REGION: "{{ envs.aws_region }}"
+      AWS_ACCESS_KEY_ID: "{{ envs.aws_access_key_id }}"
+      AWS_SECRET_ACCESS_KEY: "{{ envs.aws_secret_access_key }}"
+      S3_BUCKET_RAW: "{{ envs.s3_bucket_raw }}"
+      S3_BUCKET_ARTIFACTS: "{{ envs.s3_bucket_artifacts }}"
+    networkMode: "{{ envs.sportpulse_docker_network }}"
+    timeout: PT5M
+
+  - id: load_silver_postgres
+    type: io.kestra.plugin.docker.cli.Run
+    description: "Charge le staging avec contrôle des relations et des types."
+    containerImage: sportpulse-ai-step-app:local
+    pullPolicy: NEVER
+    entryPoint: ["/bin/sh", "-lc"]
+    commands:
+      - >-
+        python -m sportpulse.kestra_bridge load-silver
+        --manifest-uri "{{ outputs.silver_transform.vars.manifest_uri }}"
+    env:
+      APP_ENV: aws
+      DATABASE_URL: "{{ envs.database_url }}"
+      AWS_REGION: "{{ envs.aws_region }}"
+      AWS_ACCESS_KEY_ID: "{{ envs.aws_access_key_id }}"
+      AWS_SECRET_ACCESS_KEY: "{{ envs.aws_secret_access_key }}"
+      S3_BUCKET_RAW: "{{ envs.s3_bucket_raw }}"
+      S3_BUCKET_ARTIFACTS: "{{ envs.s3_bucket_artifacts }}"
+    networkMode: "{{ envs.sportpulse_docker_network }}"
+    timeout: PT15M
+
+  - id: gold_sport_aggregates
+    type: io.kestra.plugin.docker.cli.Run
+    description: "Construit les KPI sportifs Gold depuis le manifeste Silver."
+    containerImage: sportpulse-ai-step-app:local
+    pullPolicy: NEVER
+    entryPoint: ["/bin/sh", "-lc"]
+    commands:
+      - >-
+        python -m sportpulse.kestra_bridge gold
+        --manifest-uri "{{ outputs.silver_transform.vars.manifest_uri }}"
+    env:
+      APP_ENV: aws
+      AWS_REGION: "{{ envs.aws_region }}"
+      AWS_ACCESS_KEY_ID: "{{ envs.aws_access_key_id }}"
+      AWS_SECRET_ACCESS_KEY: "{{ envs.aws_secret_access_key }}"
+      S3_BUCKET_RAW: "{{ envs.s3_bucket_raw }}"
+      S3_BUCKET_ARTIFACTS: "{{ envs.s3_bucket_artifacts }}"
+      MANIFEST_DIR: /app/data/manifests
+    volumes:
+      - "{{ envs.sportpulse_host_project_dir }}/data:/app/data"
+    networkMode: "{{ envs.sportpulse_docker_network }}"
+    timeout: PT15M
+
+  - id: load_gold_postgres
+    type: io.kestra.plugin.docker.cli.Run
+    description: "Charge analytics.by_employee/by_department/by_activity_type/by_day."
+    containerImage: sportpulse-ai-step-app:local
+    pullPolicy: NEVER
+    entryPoint: ["/bin/sh", "-lc"]
+    commands:
+      - >-
+        python -m sportpulse.kestra_bridge load-gold
+        --manifest-uri "{{ outputs.gold_sport_aggregates.vars.manifest_uri }}"
+    env:
+      APP_ENV: aws
+      DATABASE_URL: "{{ envs.database_url }}"
+      AWS_REGION: "{{ envs.aws_region }}"
+      AWS_ACCESS_KEY_ID: "{{ envs.aws_access_key_id }}"
+      AWS_SECRET_ACCESS_KEY: "{{ envs.aws_secret_access_key }}"
+      S3_BUCKET_RAW: "{{ envs.s3_bucket_raw }}"
+      S3_BUCKET_ARTIFACTS: "{{ envs.s3_bucket_artifacts }}"
+    networkMode: "{{ envs.sportpulse_docker_network }}"
+    timeout: PT15M
+
+  - id: load_rh_compensation
+    type: io.kestra.plugin.docker.cli.Run
+    description: "Versions RH + salaires confidentiels, import transactionnel sans validation automatique."
+    containerImage: sportpulse-ai-step-app:local
+    pullPolicy: NEVER
+    entryPoint: ["/bin/sh", "-lc"]
+    commands:
+      - >-
+        python -m sportpulse.kestra_bridge import-rh
+        --snapshot "{{ outputs.prepare_sources.vars.rh_snapshot }}"
+    env:
+      DATABASE_URL: "{{ envs.database_url }}"
+    volumes:
+      - "{{ envs.sportpulse_host_project_dir }}/data:/app/data"
+    networkMode: "{{ envs.sportpulse_docker_network }}"
+    timeout: PT15M
+
+  - id: bonus_scenario_versioned
+    type: io.kestra.plugin.docker.cli.Run
+    description: "Enregistre budget provisoire au taux demandé, sans prime acquise."
+    containerImage: sportpulse-ai-step-app:local
+    pullPolicy: NEVER
+    entryPoint: ["/bin/sh", "-lc"]
+    commands:
+      - >-
+        python -m sportpulse.kestra_bridge scenario
+        --year "{{ inputs.reference_year }}"
+        --rate "{{ inputs.bonus_rate }}"
+        --rules-version "{{ inputs.rules_version }}"
+        --min-activities "{{ inputs.min_activities_per_year }}"
+        --days-per-eligible "{{ inputs.wellbeing_days }}"
+        --daily-cost-eur "{{ inputs.wellbeing_daily_cost_eur }}"
+    env:
+      DATABASE_URL: "{{ envs.database_url }}"
+    networkMode: "{{ envs.sportpulse_docker_network }}"
+    timeout: PT10M
+
+  - id: dbt_build_marts
+    type: io.kestra.plugin.docker.cli.Run
+    description: "Matérialisation du schéma en étoile et tests dbt."
+    containerImage: sportpulse-ai-step-dbt:local
+    pullPolicy: NEVER
+    entryPoint: ["/bin/sh", "-lc"]
+    commands:
+      - "dbt build --project-dir /usr/app --profiles-dir /usr/app"
+    env:
+      DBT_PROFILES_DIR: /usr/app
+      DBT_HOST: postgres
+      DBT_PORT: "5432"
+      DBT_DATABASE: "{{ envs.postgres_db }}"
+      DBT_USER: "{{ envs.postgres_user }}"
+      DBT_PASSWORD: "{{ envs.postgres_password }}"
+      DBT_SCHEMA: dbt_marts
+    volumes:
+      - "{{ envs.sportpulse_host_project_dir }}/dbt:/usr/app"
+    networkMode: "{{ envs.sportpulse_docker_network }}"
+    timeout: PT20M
+
+  - id: final_reporting_checks
+    type: io.kestra.plugin.docker.cli.Run
+    description: "Vérifie les effectifs RH, Silver, les salaires, l'existence du scénario Gold."
+    containerImage: sportpulse-ai-step-app:local
+    pullPolicy: NEVER
+    entryPoint: ["/bin/sh", "-lc"]
+    commands:
+      - >-
+        python -m sportpulse.kestra_bridge verify
+        --year "{{ inputs.reference_year }}"
+        --scenario-id "{{ outputs.bonus_scenario_versioned.vars.scenario_id }}"
+    env:
+      DATABASE_URL: "{{ envs.database_url }}"
+    networkMode: "{{ envs.sportpulse_docker_network }}"
+    timeout: PT5M
+
+  - id: summary
+    type: io.kestra.plugin.core.log.Log
+    message: >
+      SportPulse AI terminé. Année={{ inputs.reference_year }};
+      règle={{ inputs.rules_version }}; taux={{ inputs.bonus_rate }};
+      scénario={{ outputs.bonus_scenario_versioned.vars.scenario_id }}.
+      Effectif RH={{ outputs.final_reporting_checks.vars.expected_employees }}.
+      Les activités générées sont synthétiques et les budgets sont provisoires.
+
+errors:
+  - id: log_failure
+    type: io.kestra.plugin.core.log.Log
+    level: ERROR
+    message: >
+      ÉCHEC du flow SportPulse AI, exécution {{ execution.id }}.
+      Examiner la tâche fautive et les manifestes S3; aucun paiement ni Slack historique déclenché.

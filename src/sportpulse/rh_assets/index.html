@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SportPulse AI — RH et budget réel des sources</title>
+<link rel="stylesheet" href="/admin/rh/assets/style.css"><script defer src="/admin/rh/assets/app.js"></script><link rel="stylesheet" href="/admin/rh/assets/sp14_rh.css">
+<script defer src="/admin/rh/assets/sp15_rh.js"></script>
+<link rel="stylesheet" href="/admin/rh/assets/sp15_rh.css"></head>
+<body><header class="head"><a href="/admin">◈ SportPulse <strong>AI</strong></a><nav><a href="/admin">Accueil RH</a>  <a href="/admin/reporting">Reporting</a></nav></header>
+<main><div class="title"><div><p class="eyebrow">ADMINISTRATION RH · SOURCES FOURNIES</p><h1>Vue globale des collaborateurs</h1><p>Salaires du fichier RH, déclarations de trajet et avantages estimés. Aucune prime n'est attribuée automatiquement.</p></div><span class="pill" id="source-tag">Chargement…</span></div>
+<section class="controls"><label>Année <input type="number" id="year" min="2020" max="2100" value="2026"></label><label>Taux de prime simulé (%) <input type="number" id="rate" value="5" min="0" max="20" step="0.25"></label><button id="reload">Actualiser</button><span id="stamp"></span></section>
+<div class="alert" id="warning" hidden role="alert"></div>
+<section class="tiles" id="tiles" aria-label="Indicateurs RH"></section>
+<section class="panel"><div class="panel-title"><h2>Budgets estimés par unité métier</h2><small>Sur la base des modes de transport déclarés, avant validation RH</small></div><div class="table-wrap"><table><thead><tr><th>Département / BU</th><th>Effectif</th><th>Trajets sportifs déclarés</th><th>Masse salariale brute</th><th>Budget provisoire</th></tr></thead><tbody id="departments"></tbody></table></div></section>
+<section class="panel"><div class="panel-title"><h2>Salariés du référentiel RH</h2><small>Accès réservé à l'administrateur. Aucune adresse ni date de naissance transmise.</small></div><div class="table-wrap"><table><thead><tr><th>ID salarié</th><th>BU</th><th>Salaire brut annuel</th><th>Mode déclaré</th><th>Candidat</th><th>Trajets validés</th><th>Activités déclarées (POC)</th></tr></thead><tbody id="employees"></tbody></table></div><div class="pager"><button id="prev">Précédent</button><span id="paging"></span><button id="next">Suivant</button></div></section>
+<section class="panel"><h2>Précautions de lecture</h2><ul id="notes"></ul></section><!-- Étape 14 : lien d'identité RH, QR, replay historique sur une seule page. -->
+<section class="sp14-panel" id="sp15-portal-accounts">
+  <div class="sp14-head"><div><h2>Comptes salariés liés aux RH</h2>
+    <p class="sp14-hint">Les comptes inscrits sont reliés au référentiel RH PostgreSQL par identifiant salarié, sans validation QR. Les primes restent des simulations.</p></div>
+    <span class="sp14-badge">Identité RH</span></div>
+  <div class="sp15-search-controls">
+    <label class="sp14-field">Rechercher un compte<input id="sp15-search" type="search" placeholder="Nom, email ou identifiant salarié"></label>
+    <button id="sp15-search-button" class="sp14-btn alt" type="button">Rechercher</button>
+    <button id="sp15-sync" class="sp14-btn alt" type="button">Synchroniser les liens RH</button>
+  </div>
+  <p class="sp14-hint" id="sp15-count"></p><div class="sp15-list" id="sp15-accounts-list"></div>
+  <p class="sp14-alert" id="sp15-accounts-status" role="status" hidden></p>
+  <details><summary>Inviter un salarié du référentiel RH</summary>
+    <form id="sp15-invite-form" class="sp14-grid two" style="margin-top:14px">
+      <label class="sp14-field">Identifiant salarié RH<input id="sp15-invite-id" required></label>
+      <label class="sp14-field">Nom d'affichage<input id="sp15-invite-name" required></label>
+      <button class="sp14-btn" type="submit">Créer une invitation de connexion</button>
+    </form>
+    <div id="sp15-invite-result" hidden><label class="sp14-field">Invitation privée<input id="sp15-invite-token" readonly></label></div>
+  </details>
+</section>
+<section class="sp14-panel" id="sp14-replay">
+  <div class="sp14-head"><div><h2>Prime sportive · versionnement et replay</h2><p class="sp14-hint">Les scénarios sont calculés à partir des agrégats RH actifs. Un replay utilise l'instantané conservé lors du calcul initial : les données d'origine ne sont jamais écrasées.</p></div><span class="sp14-badge warn">Simulation, sans paiement</span></div>
+  <form id="sp14-rule-form" class="sp14-grid two">
+    <label class="sp14-field">Nouveau taux à versionner (%)<input id="sp14-new-rate" type="number" min="0" max="20" step="0.25" value="5" required></label>
+    <div class="sp14-action-row"><button type="submit" class="sp14-btn alt">Enregistrer une nouvelle règle</button></div>
+  </form>
+  <hr class="sp14-divider">
+  <form id="sp14-run-form" class="sp14-grid two">
+    <label class="sp14-field">Version à appliquer<select id="sp14-rule" required></select></label>
+    <div class="sp14-action-row"><button type="submit" class="sp14-btn">Calculer et enregistrer (PostgreSQL RH)</button></div>
+  </form>
+  <p class="sp14-alert" id="sp14-replay-status" hidden role="status"></p>
+  <p class="sp14-alert" id="sp14-run-result" hidden role="status"></p>
+  <div class="sp14-head" style="margin-top:18px"><h3 style="font-size:15px">5 derniers calculs versionnés</h3><button id="sp14-refresh-history" type="button" class="sp14-btn alt">Actualiser</button></div>
+  <div id="sp14-history" class="sp14-history"></div>
+</section>
+</main></body></html>

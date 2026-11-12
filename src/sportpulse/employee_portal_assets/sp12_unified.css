@@ -1,0 +1,31 @@
+/* Étape 12 — Le contenu métier reste sur une vue, les écrans RH avancés sont secondaires. */
+#sp12-proof-overview,#sp12-map-panel,#sp12-validation-panel{margin-top:20px}
+.sp12-verified-stats{display:flex;gap:16px;flex-wrap:wrap;margin:12px 0}
+.sp12-verified-stats div{display:grid;gap:4px;padding:12px 20px;background:#eff8fb;border-radius:12px;min-width:125px}
+.sp12-verified-stats strong{font-size:24px;color:#0a6b78}
+.sp12-verified-stats small{color:#577086}
+.sp12-validation-form{display:flex;align-items:end;gap:10px;flex-wrap:wrap}
+.sp12-validation-form label{flex:1;min-width:160px;display:grid;gap:6px}
+.sp12-validation-form input{border:1px solid #b9c9d7;border-radius:9px;min-height:42px;padding:9px}
+.sp12-qr-video{width:100%;max-width:400px;border-radius:14px;margin-top:10px}
+.sp12-map-layout{display:grid;grid-template-columns:minmax(0,2fr) minmax(220px,1fr);gap:15px}
+#sp12-map{height:350px;min-height:280px;border-radius:14px;z-index:0}
+.sp12-map-tools{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.sp12-map-tools select{padding:8px 10px;border:1px solid #d1dfe7;border-radius:8px}
+#sp12-trip-items{display:grid;gap:8px;max-height:350px;overflow-y:auto}
+.sp12-trip-item{width:100%;border:1px solid #e0e8ed;border-radius:12px;padding:11px;text-align:left;color:#24465d;background:#fff;cursor:pointer}
+.sp12-trip-item:hover,.sp12-trip-item.active{background:#e9f7fa;border-color:#72b6c4}
+.sp12-map-caption{margin-top:12px;color:#557186;font-size:13px}
+.sp12-details{display:grid;gap:12px;margin-top:20px}
+.sp12-details details{background:#fff;border:1px solid #dfeaf0;border-radius:15px;padding:16px 20px}
+.sp12-details summary{font-weight:750;color:#24516a;cursor:pointer}
+.sp12-details .page-panel{margin-top:18px}
+.sp12-status{display:inline-block;font-size:11px;font-weight:700;border-radius:9px;padding:5px 7px;color:#79571c;background:#fff1d9}
+.sp12-status.ok{color:#11634e;background:#d9f8ec}
+.sp12-proof-btn{font-size:11px!important;padding:6px 8px!important;white-space:nowrap}
+.sp12-warning{font-size:12px;color:#577086;margin-top:8px}
+@media(max-width:800px){.sp12-map-layout{grid-template-columns:1fr}#sp12-map{height:280px}.sp12-verified-stats{gap:8px}}
+
+.sp12-trip-create{padding:13px 15px;margin:10px 0 15px;border-radius:12px;border:1px solid #dfeaf0}.sp12-trip-create summary{font-weight:700;cursor:pointer;margin-bottom:10px}.sp12-trip-create select{padding:10px;border:1px solid #b9c9d7;border-radius:8px}
+
+.sp12-ref{font-size:10px;color:#557186;background:#edf3f7;padding:3px 5px;border-radius:5px}

@@ -1,0 +1,28 @@
+/* Étape 14 : administration RH unifiée, compatibilité avec les composants existants */
+.sp14-panel{border:1px solid #dce8f0;border-radius:17px;background:white;margin:20px 0;padding:24px;box-shadow:0 2px 10px #143c5807}
+.sp14-panel h2{font-size:20px;margin:0 0 8px;color:#122f46}
+.sp14-panel .sp14-hint{font-size:13px;line-height:1.5;color:#637b8d;margin:0 0 17px}
+.sp14-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.sp14-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.sp14-field{display:flex;flex-direction:column;gap:7px;font-size:12px;color:#31556a;font-weight:700}
+.sp14-field input,.sp14-field select{min-width:0;width:100%;min-height:43px;border:1px solid #c9dbe5;border-radius:9px;padding:9px 11px;background:#fff;color:#16394d;font-size:14px}
+.sp14-action-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:14px}
+.sp14-btn{border:1px solid #0b9f95;border-radius:10px;background:#09a99c;color:#fff;min-height:40px;padding:9px 16px;font-weight:700;cursor:pointer}
+.sp14-btn.alt{color:#087b78;background:#fff}
+.sp14-btn:disabled{opacity:.5;cursor:not-allowed}
+.sp14-alert{border-radius:10px;padding:11px 14px;background:#eaf8f4;color:#146456;font-size:13px;margin-top:14px;line-height:1.5}
+.sp14-alert.error{background:#fff0ec;color:#a2362d}
+.sp14-qr-box{display:flex;gap:20px;align-items:center;margin:18px 0 0;background:#f1f8fb;padding:16px;border-radius:14px}
+.sp14-qr-box img{width:142px;height:142px;object-fit:contain;background:#fff;border-radius:10px;padding:5px}
+.sp14-qr-box strong{letter-spacing:3px;font-variant-numeric:tabular-nums;font-size:29px;color:#0d3a54}
+.sp14-qr-box small{color:#627b8c;display:block;line-height:1.5}
+.sp14-labeled{font-size:12px;color:#647c89}
+.sp14-head{display:flex;justify-content:space-between;align-items:start;gap:18px}
+.sp14-badge{display:inline-flex;border-radius:20px;padding:5px 10px;background:#e5f5ed;color:#11754e;font-size:11px;font-weight:700}
+.sp14-badge.warn{background:#fff5df;color:#946105}
+.sp14-divider{border:0;border-top:1px solid #e8f0f3;margin:20px 0}
+.sp14-history{display:grid;gap:8px;margin-top:14px}
+.sp14-history-row{display:flex;align-items:center;gap:13px;justify-content:space-between;border:1px solid #e6edf0;border-radius:10px;padding:12px;font-size:13px}
+.sp14-history-row button{background:white;border:1px solid #b8d9d4;border-radius:7px;padding:7px 10px;color:#087a74;cursor:pointer}
+.sp14-code-note{font-size:12px;color:#657b89;margin-top:10px}
+@media(max-width:780px){.sp14-grid,.sp14-grid.two{grid-template-columns:1fr}.sp14-qr-box{flex-direction:column;align-items:flex-start}.sp14-panel{padding:17px}}

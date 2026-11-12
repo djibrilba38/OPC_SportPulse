@@ -1,0 +1,15 @@
+/* Suppression visuelle du suivi des trajets côté salarié, sans supprimer les données ni le contrôle RH. */
+#sp12-map-panel,
+#page-commutes,
+#recent-commutes,
+#sp12-all-details details[data-inline-page="commutes"],
+#page-dashboard .sp13-duplicate-commutes,
+.side-nav [data-page="commutes"],
+[data-goto="commutes"] {display:none!important}
+#page-dashboard>.bottom-grid{display:grid!important;grid-template-columns:minmax(0,1fr)!important}
+#page-dashboard>.bottom-grid>.panel{min-width:0}
+#sp13-validation-toggle .sp12-validation-form label:has(#sp12-validation-ref){display:none!important}
+#sp13-validation-toggle .sp12-validation-form{grid-template-columns:minmax(0,280px) auto auto!important}
+#sp13-validation-toggle .sp12-validation-form input#sp12-validation-code{font-size:18px;letter-spacing:2px}
+#sp13-validation-toggle summary .sp13-small{font-weight:400}
+@media(max-width:640px){#sp13-validation-toggle .sp12-validation-form{grid-template-columns:1fr!important}}
