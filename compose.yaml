@@ -136,6 +136,11 @@ services:
             driver-class-name: org.postgresql.Driver
             username: kestra
             password: "${KESTRA_DB_PASSWORD}"
+            
+        server:
+          basic-auth:
+            username: admin@sportpulse.local
+            password: ${KESTRA_ADMIN_PASSWORD}
 
         kestra:
           local-files:

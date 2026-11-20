@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SportPulse AI — Reporting PostgreSQL</title>
+  <link rel="stylesheet" href="/admin/reporting/assets/style.css">
+  <script defer src="/admin/reporting/assets/app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="symbol">✦</span> SportPulse <em>AI</em><span class="separation"></span><span class="subbrand">Reporting RH</span></div>
+    <nav><a href="/admin/rh">Administration RH</a><a href="/employee">Portail salarié</a></nav>
+  </header>
+  <main class="wrap">
+    <div class="intro">
+      <div>
+        <p class="eyebrow">POSTGRESQL · KESTRA · DBT</p>
+        <h1>Reporting sportif et financier</h1>
+        <p class="subtitle">Indicateurs issus du pipeline Gold et du référentiel RH, sans simulation fictive dans le navigateur.</p>
+      </div>
+      <div class="controls">
+        <label>Année sociale <input id="year" type="number" min="2020" max="2100" value="2026"></label>
+        <button id="refresh" type="button">↻ Actualiser</button>
+      </div>
+    </div>
+    <div id="notice" class="notice" role="status" aria-live="polite">Lecture du référentiel PostgreSQL…</div>
+    <div id="report" hidden>
+      <p id="period" class="period"></p>
+      <section class="cards" aria-label="Indicateurs du pipeline">
+        <div class="card"><span>Salariés du référentiel RH</span><strong id="employees">—</strong><small>Source : import Kestra</small></div>
+        <div class="card"><span>Activités enregistrées</span><strong id="activities">—</strong><small id="activity-source-detail">Gold (synthétique) + portail</small></div>
+        <div class="card"><span>Distance cumulée</span><strong id="distance">—</strong><small>Activités du POC</small></div>
+        <div class="card"><span>Temps d'activité</span><strong id="duration">—</strong><small>En minutes</small></div>
+      </section>
+      <section class="two-cols">
+        <article class="panel"><div class="panel-head"><h2>Activités par mois</h2><span>Année sociale</span></div><div id="months" class="month-chart"></div></article>
+        <article class="panel"><div class="panel-head"><h2>Répartition par sport</h2><span>Volume</span></div><div id="sports" class="list-bars"></div></article>
+      </section>
+      <section class="two-cols">
+        <article class="panel benefit">
+          <div class="panel-head"><h2>Journées bien-être potentielles</h2><span>Hypothèse de travail</span></div>
+          <div class="benefit-number" id="days">—</div>
+          <p>Pour <b id="eligible">—</b> salariés du POC, selon le seuil de 15 séances et les règles de simulation.</p>
+          <dl>
+            <div><dt>Coût potentiel des journées</dt><dd id="days-cost">—</dd></div>
+            <div><dt>Origine</dt><dd>Activités synthétiques + déclarations POC</dd></div>
+          </dl>
+          <p class="hint">Aucune journée n'est accordée automatiquement.</p>
+        </article>
+        <article class="panel benefit">
+          <div class="panel-head"><h2>Budget prévisionnel des primes</h2><span>Calcul Kestra · RH</span></div>
+          <p class="big-money" id="bonus">—</p>
+          <dl>
+            <div><dt>Candidats selon leur transport déclaré</dt><dd id="bonus-candidates">—</dd></div>
+            <div><dt>Montant avec trajets et salaire contrôlés</dt><dd id="bonus-validated">—</dd></div>
+            <div><dt>Taux du scénario / règles</dt><dd id="bonus-rule">—</dd></div>
+            <div><dt>Prime réellement versée</dt><dd>Non disponible dans le POC</dd></div>
+          </dl>
+          <p class="hint">Budget calculé sur les données RH importées : ce montant n'est ni un droit accordé ni une paie exécutée.</p>
+        </article>
+      </section>
+      <section class="panel">
+        <div class="panel-head"><h2>Dernières activités</h2><span>Sans nom de salarié</span></div>
+        <div class="table-scroll"><table><thead><tr><th>Date</th><th>Activité</th><th>Distance</th><th>Durée</th><th>Origine</th></tr></thead><tbody id="latest"></tbody></table></div>
+      </section>
+      <section class="panel"><div class="panel-head"><h2>Sources et précautions</h2><span>Traçabilité</span></div>
+        <ul id="notes"></ul>
+      </section>
+      <p class="footer">SportPulse AI · Les modèles Gold sont mis à jour par Kestra/dbt ; les déclarations du portail sont lues directement. Actualisation de la page toutes les 15 secondes.</p>
+    </div>
+  </main>
+</body>
+</html>
